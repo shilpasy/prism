@@ -15,7 +15,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
 
-FONT_NAME = "Georgia"
+FONT_NAME = "Arial"
 NAME_SIZE = Pt(16)
 CONTACT_SIZE = Pt(9.5)
 SECTION_SIZE = Pt(11)
@@ -272,7 +272,7 @@ def build_pdf_via_html(cv_data: dict, pdf_path: str) -> str | None:
 
     css = """
     @page{size:letter;margin:.75in}
-    body{font-family:Georgia,'Times New Roman',serif;font-size:10pt;color:#222;line-height:1.35;margin:0}
+    body{font-family:Arial,'Liberation Sans',Helvetica,sans-serif;font-size:10pt;color:#222;line-height:1.35;margin:0}
     .name{font-size:16pt;font-weight:bold;color:#2E4057;text-align:center;margin-bottom:2pt}
     .ct{font-size:9.5pt;text-align:center;color:#444;margin-bottom:1pt}
     .sh{font-size:11pt;font-weight:bold;color:#2E4057;border-bottom:1pt solid #2E4057;
