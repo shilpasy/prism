@@ -22,6 +22,7 @@ from resume_agent import (
     polish_experiences, apply_polish_revision,
     finalize_experiences, generate_summary,
 )
+from resume_agent.freetier import free_key, free_available, free_status, record_free_use
 
 st.set_page_config(page_title="Resume Agent", page_icon="📄", layout="wide")
 st.title("Resume Agent")
@@ -45,11 +46,32 @@ def set_stage(s):
 
 # ── Sidebar: API key + resume load ───────────────────────────────────────────
 with st.sidebar:
-    api_key = st.text_input("OpenAI API key", type="password",
-                            value=os.getenv("OPENAI_API_KEY", ""),
-                            placeholder="sk-proj-...",
-                            help="Required for JD parsing, scoring, and bullet polishing.")
-    if not api_key:
+    user_key = st.text_input("OpenAI API key", type="password",
+                             value=os.getenv("OPENAI_API_KEY", ""),
+                             placeholder="sk-proj-...",
+                             help="Required for JD parsing, scoring, and bullet polishing.")
+
+    # Resolve the effective key: the visitor's own key takes priority; otherwise
+    # fall back to the owner-funded free tier (if configured and today's cap remains).
+    _, free_limit, free_remaining = free_status() if free_key() else (0, 0, 0)
+    using_free = False
+    if user_key:
+        api_key = user_key
+    elif free_available():
+        api_key = free_key()
+        using_free = True
+    else:
+        api_key = ""
+
+    if user_key:
+        st.caption("🔑 Using your own key — never stored or logged.")
+    elif using_free:
+        st.success(f"✨ Free trial active — {free_remaining} of {free_limit} runs left today. "
+                   "No key needed. Add your own key above for unlimited use.")
+    elif free_key():  # free tier exists but exhausted for today
+        st.warning("Free trial for today is used up. Add your own OpenAI key above to continue. "
+                   "Get one at [platform.openai.com/api-keys](https://platform.openai.com/api-keys).")
+    else:
         st.caption("🔑 Prism runs on your own OpenAI key — it's never stored or logged. "
                    "Get one at [platform.openai.com/api-keys](https://platform.openai.com/api-keys). "
                    "A full CV costs roughly $0.05–0.15 in API usage.")
@@ -147,6 +169,9 @@ if get_stage() == "jd":
 
     if st.button("Analyse JD & score bullets", type="primary",
                  disabled=not (jd_text.strip() and api_key)):
+        # Count one free run against the daily cap (this triggers the bulk of API spend)
+        if using_free:
+            record_free_use()
         with st.spinner("Parsing JD..."):
             try:
                 parsed_jd = parse_jd(jd_text, api_key=api_key)
