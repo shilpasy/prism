@@ -1,6 +1,8 @@
-# Resume Agent
+# Prism
 
-A multi-track CV generator for multi-domain professionals — people whose career spans more than one field and who need materially different CVs depending on the role, not just a reformatted version of the same document.
+**One resume in, every angle out.**
+
+A multi-track CV generator for multi-domain professionals — people whose career spans more than one field and who need materially different CVs depending on the role, not just a reformatted version of the same document. Like light through a prism, your master resume splits into tailored versions for each track.
 
 ## The problem it solves
 
@@ -48,8 +50,8 @@ Track affects which bullets score highest during selection and how skills are re
 curl -Ls https://astral.sh/uv/install.sh | sh
 
 # Clone and install
-git clone https://github.com/shilpasy/resume-agent
-cd resume-agent
+git clone https://github.com/shilpasy/prism
+cd prism
 uv sync
 
 # Add your OpenAI key
