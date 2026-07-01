@@ -49,6 +49,10 @@ with st.sidebar:
                             value=os.getenv("OPENAI_API_KEY", ""),
                             placeholder="sk-proj-...",
                             help="Required for JD parsing, scoring, and bullet polishing.")
+    if not api_key:
+        st.caption("🔑 Prism runs on your own OpenAI key — it's never stored or logged. "
+                   "Get one at [platform.openai.com/api-keys](https://platform.openai.com/api-keys). "
+                   "A full CV costs roughly $0.05–0.15 in API usage.")
     st.divider()
 
     mode = st.radio("Starting point", ["Convert existing resumes", "Upload master_resume.json"],

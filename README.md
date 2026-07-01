@@ -43,6 +43,12 @@ The same master resume generates materially different CVs depending on which tra
 
 Track affects which bullets score highest during selection and how skills are reordered.
 
+## Bring your own key
+
+Prism runs on **your** OpenAI API key — you paste it into the app and it's never stored or logged. A full tailored CV costs roughly **$0.05–0.15** in API usage. Get a key at [platform.openai.com/api-keys](https://platform.openai.com/api-keys).
+
+> _Demo GIF coming here — shows the full flow without needing a key._
+
 ## Quick start
 
 ```bash
