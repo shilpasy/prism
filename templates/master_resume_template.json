@@ -1,0 +1,107 @@
+{
+  "_instructions": {
+    "tags": "Tags are keywords that describe each item. Use them to control which track selects which bullet. See tag vocabulary below.",
+    "tracks": {
+      "technical": "ML, python, modeling, pipelines — for IC/DS/MLE roles",
+      "leadership": "leadership, mentoring, stakeholder-management — for lead/manager roles",
+      "domain": "bioinformatics, drug-discovery, research, publications — for pharma/biotech/research roles"
+    },
+    "tag_vocabulary": {
+      "technical": ["ml", "python", "statistics", "modeling", "pipeline", "hpc", "algorithms", "deep-learning", "nlp", "sql", "data-engineering", "docker", "cloud", "pytorch", "scikit-learn", "xgboost", "lightgbm", "shap", "explainability"],
+      "leadership": ["leadership", "mentoring", "stakeholder-management", "cross-functional", "program-management", "communication", "strategy", "hiring", "roadmap", "executive-reporting"],
+      "domain": ["bioinformatics", "genomics", "proteomics", "drug-discovery", "cheminformatics", "molecular-dynamics", "structural-biology", "publications", "research", "clinical-data", "ngs", "multi-omics", "biomarker", "qsar", "patent"]
+    }
+  },
+  "contact": {
+    "name": "Your Full Name",
+    "email": "you@email.com",
+    "phone": "+1 000 000 0000",
+    "linkedin": "linkedin.com/in/yourhandle",
+    "github": "github.com/yourhandle",
+    "location": "City, Province/State, Country",
+    "scholar_url": ""
+  },
+  "experiences": [
+    {
+      "role": "Senior Data Scientist",
+      "org": "Acme Corp",
+      "dates": "Jan 2023 – Present",
+      "tags": ["ml", "python", "pipeline", "stakeholder-management", "leadership"],
+      "bullets": [
+        {
+          "text": "Built an XGBoost churn model reducing customer churn by 18%, deployed via FastAPI on AWS.",
+          "tags": ["ml", "python", "xgboost", "cloud", "production"]
+        },
+        {
+          "text": "Led a team of 3 data scientists, ran weekly syncs, and owned the roadmap for 2 quarters.",
+          "tags": ["leadership", "mentoring", "roadmap", "stakeholder-management"]
+        },
+        {
+          "text": "Partnered with Product and Engineering to ship a real-time recommendation engine.",
+          "tags": ["cross-functional", "pipeline", "production", "communication"]
+        }
+      ]
+    },
+    {
+      "role": "Data Scientist",
+      "org": "Previous Company",
+      "dates": "Jun 2020 – Dec 2022",
+      "tags": ["ml", "python", "sql", "statistics"],
+      "bullets": [
+        {
+          "text": "Developed NLP pipeline to classify 50K support tickets daily, saving 200 hrs/month of manual triage.",
+          "tags": ["ml", "nlp", "python", "pipeline"]
+        },
+        {
+          "text": "Collaborated with clinical stakeholders to design a study powered at 80% for the primary endpoint.",
+          "tags": ["statistics", "clinical-data", "stakeholder-management", "communication"]
+        }
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Drug Screen Hit Predictor",
+      "url": "github.com/you/hit-predictor",
+      "tags": ["ml", "cheminformatics", "drug-discovery", "python"],
+      "bullets": [
+        {
+          "text": "LightGBM model on 9 molecular fingerprint types to predict active compounds from HTS screens.",
+          "tags": ["ml", "lightgbm", "cheminformatics", "drug-discovery"]
+        },
+        {
+          "text": "Scaffold-based GroupKFold cross-validation to avoid data leakage from chemical similarity.",
+          "tags": ["ml", "statistics", "cheminformatics"]
+        }
+      ]
+    }
+  ],
+  "skills": {
+    "Languages": ["Python", "R", "SQL", "Bash"],
+    "ML / AI": ["scikit-learn", "XGBoost", "LightGBM", "PyTorch", "SHAP", "Optuna"],
+    "Bioinformatics": ["GROMACS", "Rosetta", "DESeq2", "Nextflow", "SLURM"],
+    "Data": ["Pandas", "Spark", "dbt", "Airflow"],
+    "Cloud / Infra": ["AWS", "GCP", "Docker", "Kubernetes"]
+  },
+  "education": [
+    {
+      "degree": "PhD, Computational Biology",
+      "institution": "University Name",
+      "dates": "2015 – 2020",
+      "location": "City, Country",
+      "details": [
+        "Thesis: Machine learning approaches for protein structure prediction"
+      ]
+    }
+  ],
+  "achievements": [
+    {
+      "text": "Top performer, CrossTALK ML Competition (UofT DSI, Nov 2024) — hit retrieval from HTS screens.",
+      "tags": ["ml", "cheminformatics", "competition"]
+    },
+    {
+      "text": "Co-inventor, US Patent 11,XXX,XXX — oncogenic eIF4E inhibitor design (Merck collaboration).",
+      "tags": ["patent", "drug-discovery", "domain", "collaboration"]
+    }
+  ]
+}

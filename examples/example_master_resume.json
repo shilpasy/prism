@@ -1,0 +1,144 @@
+{
+  "contact": {
+    "name": "Alex Chen",
+    "email": "alex.chen@email.com",
+    "phone": "+1 416 555 0100",
+    "linkedin": "linkedin.com/in/alexchen",
+    "github": "github.com/alexchen-ml",
+    "location": "Toronto, ON, Canada",
+    "scholar_url": "scholar.google.com/citations?user=example"
+  },
+  "experiences": [
+    {
+      "role": "Senior Data Scientist",
+      "org": "Genomics Health Inc.",
+      "dates": "Jan 2022 – Present",
+      "tags": ["ml", "python", "bioinformatics", "stakeholder-management", "leadership", "research"],
+      "bullets": [
+        {
+          "text": "Built multi-modal ML model integrating genomic, proteomic, and clinical data (n=12,000) to predict treatment response, achieving AUC 0.87 in held-out validation.",
+          "tags": ["ml", "python", "bioinformatics", "multi-omics", "research", "clinical-data"]
+        },
+        {
+          "text": "Led cross-functional team of 4 data scientists and 2 bioinformaticians; owned quarterly roadmap and presented findings to C-suite and clinical advisory board.",
+          "tags": ["leadership", "stakeholder-management", "cross-functional", "roadmap", "executive-reporting"]
+        },
+        {
+          "text": "Deployed SHAP-based explainability layer on top of XGBoost pipeline, enabling clinicians to understand model drivers and increasing adoption by 60%.",
+          "tags": ["ml", "shap", "explainability", "xgboost", "python", "production"]
+        },
+        {
+          "text": "Designed and ran HPC workflows on SLURM clusters (400-node) to process 50TB of sequencing data, reducing runtime from 6 days to 14 hours.",
+          "tags": ["hpc", "bioinformatics", "pipeline", "ngs"]
+        }
+      ]
+    },
+    {
+      "role": "Computational Biologist",
+      "org": "BioStructure Labs",
+      "dates": "Jun 2019 – Dec 2021",
+      "tags": ["structural-biology", "molecular-dynamics", "drug-discovery", "research", "publications"],
+      "bullets": [
+        {
+          "text": "Applied GROMACS and AMBER MD simulations to characterize protein-ligand binding for 3 oncology targets; findings contributed to 2 peer-reviewed publications.",
+          "tags": ["molecular-dynamics", "drug-discovery", "structural-biology", "publications", "research"]
+        },
+        {
+          "text": "Developed QSAR model (random forest + RDKit fingerprints) for membrane permeability prediction with F1 of 0.91, integrated into internal screening pipeline.",
+          "tags": ["ml", "qsar", "cheminformatics", "drug-discovery", "python", "pipeline"]
+        },
+        {
+          "text": "Collaborated with AstraZeneca's oncology team as external partner to evaluate computational hits against CDK4/6 targets.",
+          "tags": ["collaboration", "drug-discovery", "structural-biology", "stakeholder-management"]
+        }
+      ]
+    },
+    {
+      "role": "Data Scientist (Freelance)",
+      "org": "FinEdge Analytics",
+      "dates": "Mar 2018 – May 2019",
+      "tags": ["ml", "python", "sql", "data-engineering", "finance"],
+      "bullets": [
+        {
+          "text": "Built time-series churn model (LightGBM) on 2M customer records, reducing quarterly churn by 12% through targeted retention campaigns.",
+          "tags": ["ml", "lightgbm", "python", "sql", "production"]
+        },
+        {
+          "text": "Designed ETL pipeline in Airflow + dbt pulling from 6 data sources into a unified feature store used by 3 downstream models.",
+          "tags": ["data-engineering", "pipeline", "sql", "python"]
+        }
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Drug Screen Hit Predictor",
+      "url": "github.com/alexchen-ml/hit-predictor",
+      "tags": ["ml", "cheminformatics", "drug-discovery", "python"],
+      "bullets": [
+        {
+          "text": "LightGBM ensemble on 9 molecular fingerprint types (ECFP4, MACCS, RDKit) to predict active compounds from high-throughput screens.",
+          "tags": ["ml", "lightgbm", "cheminformatics", "drug-discovery"]
+        },
+        {
+          "text": "Scaffold-based GroupKFold cross-validation to prevent data leakage from chemical similarity; Tanimoto diversity reranking of top candidates.",
+          "tags": ["ml", "statistics", "cheminformatics"]
+        }
+      ]
+    },
+    {
+      "name": "Multi-Omics Integration Pipeline",
+      "url": "github.com/alexchen-ml/omics-pipeline",
+      "tags": ["bioinformatics", "python", "pipeline", "ml", "multi-omics"],
+      "bullets": [
+        {
+          "text": "Nextflow DSL2 pipeline integrating WGS, RNA-seq, and MS-proteomics data with automated QC, normalization, and differential analysis steps.",
+          "tags": ["bioinformatics", "ngs", "pipeline", "multi-omics"]
+        },
+        {
+          "text": "MOFA+ factor analysis to identify shared latent structure across omics layers in a 500-patient cancer cohort.",
+          "tags": ["bioinformatics", "multi-omics", "statistics", "research"]
+        }
+      ]
+    }
+  ],
+  "skills": {
+    "Languages": ["Python", "R", "SQL", "Bash"],
+    "ML / AI": ["scikit-learn", "XGBoost", "LightGBM", "PyTorch", "SHAP", "Optuna"],
+    "Bioinformatics": ["GROMACS", "AMBER", "RDKit", "DESeq2", "GATK", "Nextflow", "SLURM"],
+    "Data": ["Pandas", "Spark", "dbt", "Airflow", "Snowflake"],
+    "Cloud / Infra": ["AWS", "GCP", "Docker", "Kubernetes"]
+  },
+  "education": [
+    {
+      "degree": "PhD, Computational Biology",
+      "institution": "University of Toronto",
+      "dates": "2014 – 2019",
+      "location": "Toronto, ON",
+      "details": [
+        "Thesis: Data-driven approaches for protein-ligand binding prediction"
+      ]
+    },
+    {
+      "degree": "BSc, Bioinformatics (Honours)",
+      "institution": "McGill University",
+      "dates": "2010 – 2014",
+      "location": "Montreal, QC",
+      "details": []
+    }
+  ],
+  "achievements": [
+    {
+      "text": "Top performer, CrossTALK ML Competition (UofT DSI, 2024) — predictive hit retrieval from high-throughput drug screens.",
+      "tags": ["ml", "cheminformatics", "competition"]
+    },
+    {
+      "text": "Co-inventor, US Patent 11,XXX,XXX — macrocyclic peptide inhibitor design targeting oncogenic eIF4E.",
+      "tags": ["patent", "drug-discovery", "domain", "collaboration"]
+    },
+    {
+      "text": "Published ML model for peptide membrane permeability (Journal of Chemical Information and Modeling, 2021, F1=0.91).",
+      "tags": ["publications", "ml", "drug-discovery", "peer-reviewed"]
+    }
+  ]
+}
