@@ -1,14 +1,14 @@
 # Prism
 
-**One resume in, every angle out.**
+**Tailor your resume to the job you're actually applying for.**
 
-A multi-track CV generator for multi-domain professionals — people whose career spans more than one field and who need materially different CVs depending on the role, not just a reformatted version of the same document. Like light through a prism, your master resume splits into tailored versions for each track.
+Give Prism your resume and a job posting. It reads the role, finds the experience of yours that fits, drops what doesn't, rewrites your bullets in the language the role uses, and surfaces the transferable skills that match — then hands you a tailored Word doc. Like light through a prism, one background is refocused for whatever role you're aiming at.
 
 ## The problem it solves
 
-Most AI resume tools rewrite your existing resume. This agent does something different: it starts from a **master resume JSON** that holds your complete work history — every role, bullet, project, and achievement — and uses a four-stage LLM pipeline to generate a tailored CV for any job posting.
+Most people send the same resume to every job, or hand-edit it for hours per application. Prism does the tailoring for you: you paste the job, it decides what of *your* experience is relevant to *this* role and how to phrase it.
 
-The key distinction: **nothing is invented**. All content comes from bullets you wrote and approved. The agent selects, reorders, and rephrases — but never fabricates.
+The key distinction: **nothing is invented**. All content comes from your own experience. Prism selects, reorders, and rephrases to fit the job — but never fabricates skills or accomplishments you don't have.
 
 ## How it works
 
@@ -79,17 +79,13 @@ Set these in the host's dashboard — **never commit them**:
 
 `OPENAI_API_KEY` is **ignored on the server** — it only takes effect locally when `PRISM_ALLOW_ENV_KEY=1` is also set. This is deliberate: it means a stray `OPENAI_API_KEY` can never become an uncapped shared key in production. Do not set `PRISM_ALLOW_ENV_KEY` on a server.
 
-## Building your master_resume.json
+## How you give Prism your experience
 
-Two ways:
+You upload your resume (1–3 versions if you have them — different roles, different formats) and Prism reads it into a structured record of everything you've done. This is *not* the product — it's just how Prism learns your background so it has the full picture to draw from when tailoring. Under the hood this record is a `master_resume.json`; you never have to touch it.
 
-**Option A — Upload existing resumes (recommended)**
-Upload 1–3 versions of your resume (PDF, DOCX, or plain text). GPT-4o reads all of them, merges them, and builds the JSON automatically — with tags suggested based on what each bullet actually demonstrates.
+If you'd rather build that record by hand, download `templates/master_resume_template.json` from the sidebar and fill it in. See `examples/example_master_resume.json` for a realistic reference.
 
-**Option B — Fill in the template manually**
-Download `templates/master_resume_template.json` from the app sidebar. The template includes inline instructions and the full tag vocabulary.
-
-See `examples/example_master_resume.json` for a realistic reference.
+**The actual work happens next:** you paste the job you're applying for, and Prism selects the most relevant experience, drops what doesn't fit, rewrites bullets in the role's language, and surfaces the transferable skills that match — then hands you a tailored Word doc.
 
 ## Tagging
 
