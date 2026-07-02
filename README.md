@@ -1,3 +1,5 @@
+<img src="assets/prism_logo.svg" width="72" align="left" />
+
 # Prism
 
 **Tailor your resume to the job you're actually applying for.**

@@ -1,0 +1,21 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- incoming white light beam -->
+  <line x1="2" y1="66" x2="44" y2="58" stroke="#F5F7FF" stroke-width="3" stroke-linecap="round"/>
+  <!-- refracted spectrum fan -->
+  <line x1="74" y1="56" x2="118" y2="30" stroke="#FF4D4D" stroke-width="2.6" stroke-linecap="round"/>
+  <line x1="74" y1="59" x2="118" y2="44" stroke="#FFB84D" stroke-width="2.6" stroke-linecap="round"/>
+  <line x1="74" y1="62" x2="118" y2="58" stroke="#FFE84D" stroke-width="2.6" stroke-linecap="round"/>
+  <line x1="74" y1="65" x2="118" y2="72" stroke="#4DFF88" stroke-width="2.6" stroke-linecap="round"/>
+  <line x1="74" y1="68" x2="118" y2="86" stroke="#4DD2FF" stroke-width="2.6" stroke-linecap="round"/>
+  <line x1="74" y1="71" x2="118" y2="100" stroke="#B84DFF" stroke-width="2.6" stroke-linecap="round"/>
+  <!-- glass prism -->
+  <path d="M60 26 L88 84 L32 84 Z" fill="url(#prismGrad)" fill-opacity="0.28"
+        stroke="#CFD6FF" stroke-width="2.6" stroke-linejoin="round"/>
+  <defs>
+    <linearGradient id="prismGrad" x1="32" y1="26" x2="88" y2="84" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8B5CF6"/>
+      <stop offset="0.5" stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#EC4899"/>
+    </linearGradient>
+  </defs>
+</svg>

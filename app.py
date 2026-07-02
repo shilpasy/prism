@@ -37,10 +37,49 @@ from resume_agent.freetier import (
     free_key, free_available, free_status, record_free_use, per_session_limit,
 )
 
-st.set_page_config(page_title="Prism", page_icon="📄", layout="wide")
-st.title("Prism")
-st.caption("Upload your resume and the job you're applying for. Prism tailors your "
-           "experience to fit the role, surfacing the transferable skills that match.")
+st.set_page_config(page_title="Prism", page_icon="🔮", layout="wide")
+
+# ── Prismatic theme: CSS + gradient hero ──────────────────────────────────────
+_PRISM_SVG = """<svg width="58" height="58" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+<line x1="2" y1="66" x2="44" y2="58" stroke="#F5F7FF" stroke-width="3" stroke-linecap="round"/>
+<line x1="74" y1="56" x2="118" y2="30" stroke="#FF4D4D" stroke-width="2.6" stroke-linecap="round"/>
+<line x1="74" y1="59" x2="118" y2="44" stroke="#FFB84D" stroke-width="2.6" stroke-linecap="round"/>
+<line x1="74" y1="62" x2="118" y2="58" stroke="#FFE84D" stroke-width="2.6" stroke-linecap="round"/>
+<line x1="74" y1="65" x2="118" y2="72" stroke="#4DFF88" stroke-width="2.6" stroke-linecap="round"/>
+<line x1="74" y1="68" x2="118" y2="86" stroke="#4DD2FF" stroke-width="2.6" stroke-linecap="round"/>
+<line x1="74" y1="71" x2="118" y2="100" stroke="#B84DFF" stroke-width="2.6" stroke-linecap="round"/>
+<path d="M60 26 L88 84 L32 84 Z" fill="url(#pg)" fill-opacity="0.28" stroke="#CFD6FF" stroke-width="2.6" stroke-linejoin="round"/>
+<defs><linearGradient id="pg" x1="32" y1="26" x2="88" y2="84" gradientUnits="userSpaceOnUse">
+<stop stop-color="#8B5CF6"/><stop offset="0.5" stop-color="#22D3EE"/><stop offset="1" stop-color="#EC4899"/>
+</linearGradient></defs></svg>"""
+
+st.markdown("""<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&display=swap');
+html, body, [class*="css"] { font-family:'Inter',sans-serif; }
+.stApp { background: radial-gradient(1100px 550px at 18% -12%, #1b2145 0%, #0E1117 58%); }
+.prism-hero { display:flex; align-items:center; gap:16px; margin:4px 0 2px; }
+.prism-title { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:46px;
+  letter-spacing:3px; margin:0; line-height:1;
+  background:linear-gradient(90deg,#8B5CF6,#22D3EE,#EC4899);
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 14px rgba(139,92,246,0.35)); }
+.prism-tag { color:#AAB1C4; font-size:15px; max-width:720px; margin:2px 0 6px; line-height:1.5; }
+h2, h3 { font-family:'Space Grotesk',sans-serif; letter-spacing:.3px; }
+hr { border:none; height:2px; opacity:.55;
+  background:linear-gradient(90deg,#8B5CF6,#22D3EE,#EC4899); }
+.stButton>button[kind="primary"] { border:0; font-weight:600; color:#fff;
+  background:linear-gradient(90deg,#7C3AED,#DB2777);
+  box-shadow:0 0 18px rgba(124,58,237,0.45); transition:box-shadow .2s ease; }
+.stButton>button[kind="primary"]:hover { box-shadow:0 0 28px rgba(219,39,119,0.6); }
+[data-testid="stSidebar"] { background:#12151F; border-right:1px solid #232838; }
+</style>""", unsafe_allow_html=True)
+
+st.markdown(
+    f'<div class="prism-hero">{_PRISM_SVG}<div class="prism-title">PRISM</div></div>'
+    '<div class="prism-tag">Upload your resume and the job you\'re applying for. '
+    'Prism tailors your experience to fit the role, surfacing the transferable skills that match.</div>',
+    unsafe_allow_html=True,
+)
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
