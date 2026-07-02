@@ -6,10 +6,15 @@ The owner sets their key as PRISM_FREE_KEY on the server. A global counter
 (persisted to disk) tracks total free runs per day across ALL visitors.
 Once the daily cap is reached, the app falls back to bring-your-own-key.
 
+Two limits work together:
+  - per-session cap: each visitor gets a few free runs (best-effort; resets on refresh)
+  - global daily cap: hard ceiling across ALL visitors — the real spend protector
+
 Environment variables:
-  PRISM_FREE_KEY          the owner's OpenAI key used for free runs (unset = no free tier)
-  PRISM_DAILY_FREE_LIMIT  max free runs per day across all users (default 20)
-  PRISM_FREE_COUNTER      path to the counter file (default /tmp/prism_free_counter.json)
+  PRISM_FREE_KEY           the owner's OpenAI key used for free runs (unset = no free tier)
+  PRISM_DAILY_FREE_LIMIT   max free runs per day across all users (default 10, ~$1/day)
+  PRISM_FREE_PER_SESSION   max free runs per browser session (default 2)
+  PRISM_FREE_COUNTER       path to the counter file (default /tmp/prism_free_counter.json)
 """
 from __future__ import annotations
 import json
@@ -27,9 +32,17 @@ def _store_path() -> Path:
 
 def _daily_limit() -> int:
     try:
-        return int(os.getenv("PRISM_DAILY_FREE_LIMIT", "20"))
+        return int(os.getenv("PRISM_DAILY_FREE_LIMIT", "10"))
     except ValueError:
-        return 20
+        return 10
+
+
+def per_session_limit() -> int:
+    """Max free runs per browser session (best-effort; resets on refresh)."""
+    try:
+        return int(os.getenv("PRISM_FREE_PER_SESSION", "2"))
+    except ValueError:
+        return 2
 
 
 def free_key() -> str:

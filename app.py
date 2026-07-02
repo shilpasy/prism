@@ -22,7 +22,9 @@ from resume_agent import (
     polish_experiences, apply_polish_revision,
     finalize_experiences, generate_summary,
 )
-from resume_agent.freetier import free_key, free_available, free_status, record_free_use
+from resume_agent.freetier import (
+    free_key, free_available, free_status, record_free_use, per_session_limit,
+)
 
 st.set_page_config(page_title="Resume Agent", page_icon="📄", layout="wide")
 st.title("Resume Agent")
@@ -52,12 +54,16 @@ with st.sidebar:
                              help="Required for JD parsing, scoring, and bullet polishing.")
 
     # Resolve the effective key: the visitor's own key takes priority; otherwise
-    # fall back to the owner-funded free tier (if configured and today's cap remains).
-    _, free_limit, free_remaining = free_status() if free_key() else (0, 0, 0)
+    # fall back to the owner-funded free tier. Free use requires BOTH the global
+    # daily cap to have room AND this session's per-visitor allowance to remain.
+    sess_limit = per_session_limit()
+    sess_used = st.session_state.get("free_runs_used", 0)
+    sess_left = max(0, sess_limit - sess_used)
     using_free = False
+
     if user_key:
         api_key = user_key
-    elif free_available():
+    elif free_available() and sess_left > 0:
         api_key = free_key()
         using_free = True
     else:
@@ -66,10 +72,13 @@ with st.sidebar:
     if user_key:
         st.caption("🔑 Using your own key — never stored or logged.")
     elif using_free:
-        st.success(f"✨ Free trial active — {free_remaining} of {free_limit} runs left today. "
+        st.success(f"✨ Free trial — {sess_left} of {sess_limit} runs left. "
                    "No key needed. Add your own key above for unlimited use.")
-    elif free_key():  # free tier exists but exhausted for today
-        st.warning("Free trial for today is used up. Add your own OpenAI key above to continue. "
+    elif free_key() and sess_left == 0:  # this visitor used their session allowance
+        st.warning("You've used your free runs. Add your own OpenAI key above to continue. "
+                   "Get one at [platform.openai.com/api-keys](https://platform.openai.com/api-keys).")
+    elif free_key():  # free tier exists but the global daily cap is exhausted
+        st.warning("Free runs for today are used up. Add your own OpenAI key above to continue. "
                    "Get one at [platform.openai.com/api-keys](https://platform.openai.com/api-keys).")
     else:
         st.caption("🔑 Prism runs on your own OpenAI key — it's never stored or logged. "
@@ -169,9 +178,11 @@ if get_stage() == "jd":
 
     if st.button("Analyse JD & score bullets", type="primary",
                  disabled=not (jd_text.strip() and api_key)):
-        # Count one free run against the daily cap (this triggers the bulk of API spend)
+        # Count one free run against both the global daily cap and this session's
+        # allowance (this triggers the bulk of API spend).
         if using_free:
             record_free_use()
+            st.session_state["free_runs_used"] = sess_used + 1
         with st.spinner("Parsing JD..."):
             try:
                 parsed_jd = parse_jd(jd_text, api_key=api_key)
