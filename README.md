@@ -4,7 +4,20 @@
 
 **Tailor your resume to the job you're actually applying for.**
 
+[![Live app](https://img.shields.io/badge/Live%20app-prism--resume.streamlit.app-8B5CF6?style=for-the-badge)](https://prism-resume.streamlit.app)
+&nbsp;
+[![License: MIT](https://img.shields.io/badge/License-MIT-22D3EE.svg?style=for-the-badge)](LICENSE)
+
 Give Prism your resume and a job posting. It reads the role, finds the experience of yours that fits, drops what doesn't, rewrites your bullets in the language the role uses, and surfaces the transferable skills that match — then hands you a tailored Word doc. Like light through a prism, one background is refocused for whatever role you're aiming at.
+
+<br clear="left" />
+
+## Demo
+
+<!-- Save a screenshot of the app to assets/screenshot.png and it will show here -->
+![Prism app](assets/screenshot.png)
+
+**Try it:** [prism-resume.streamlit.app](https://prism-resume.streamlit.app)
 
 ## The problem it solves
 
@@ -15,41 +28,35 @@ The key distinction: **nothing is invented**. All content comes from your own ex
 ## How it works
 
 ```
-master_resume.json  +  job description URL / text
+your resume  +  job description (URL or text)
          │
          ▼
-Stage 1  Parse JD           → extract role, company, requirements, domain (GPT-4o)
+Stage 1  Parse the job       → role, company, requirements, domain            (GPT-4o)
          │
          ▼
-Stage 2  Score & select     → LLM scores every bullet 0–10 against JD requirements
-         │                    (85% LLM judgment + 15% tag overlap via GPT-4o-mini)
-         │                    Human review: accept / drop roles / drop bullets
+Stage 2  Score & select      → score every bullet 0–10 against the job         (GPT-4o-mini)
+         │                     85% LLM judgment + 15% tag overlap
+         │                     Human review: accept / drop roles / drop bullets
          ▼
-Stage 3  Polish bullets     → GPT-4o rewrites selected bullets to match JD language
-         │                    Cross-domain rule: removes jargon the JD doesn't use,
-         │                    replaces with the transferable concept it demonstrates
-         │                    Human review: before/after diff, targeted revisions
+Stage 3  Polish bullets      → rewrite selected bullets in the role's language (GPT-4o)
+         │                     Cross-domain rule: swap jargon the job doesn't use
+         │                     for the transferable concept it demonstrates
+         │                     Human review: before/after diff, targeted edits
          ▼
-Stage 4  Generate CV        → professional summary (GPT-4o) + docx + PDF output
+Stage 4  Generate CV         → tailored professional summary + Word doc        (GPT-4o)
 ```
 
-## Tracks
+Model routing keeps cost low: the many bullet-scoring calls run on GPT-4o-mini, and only the JD parsing, rewriting, and summary use GPT-4o. A full tailored CV costs roughly **$0.05–0.15** in API usage.
 
-The same master resume generates materially different CVs depending on which track you select:
+## Role types
 
-| Track | Best for |
+The same background produces materially different CVs depending on the role type you pick — it biases which experience scores highest:
+
+| Role type | Best for |
 |---|---|
 | **Technical / IC** | ML Engineer, Data Scientist, Research Scientist, SWE |
 | **Leadership / People Manager** | Principal DS, Team Lead, Manager, Director |
-| **Domain Expert** | Pharma, Biotech, Academic-adjacent, Clinical Research |
-
-Track affects which bullets score highest during selection and how skills are reordered.
-
-## Bring your own key
-
-Prism runs on **your** OpenAI API key — you paste it into the app and it's never stored or logged. A full tailored CV costs roughly **$0.05–0.15** in API usage. Get a key at [platform.openai.com/api-keys](https://platform.openai.com/api-keys).
-
-> _Demo GIF coming here — shows the full flow without needing a key._
+| **Domain Expert / Research Scientist** | Pharma, Biotech, Academic-adjacent, Clinical Research |
 
 ## Quick start
 
@@ -69,29 +76,46 @@ cp .env.example .env   # then edit .env
 uv run streamlit run app.py
 ```
 
-### Deploying (Railway etc.)
+## How you give Prism your experience
 
-Set these in the host's dashboard — **never commit them**:
+Upload your resume (1–3 versions if you have them — different roles, different formats). Prism reads it into a structured record of everything you've done. This is *not* the product — it's just how Prism learns your background so it has the full picture to draw from when tailoring. Under the hood that record is a `master_resume.json`; you never have to touch it.
+
+Prefer to build it by hand? Download `templates/master_resume_template.json` from the sidebar. See `examples/example_master_resume.json` for a realistic reference.
+
+## Deploying (free)
+
+Prism is stateless and docx-only, so it deploys free on **Streamlit Community Cloud** — no Docker, no Chrome. Set these in the host's Secrets panel (never commit them):
 
 | Variable | Purpose |
 |---|---|
-| `PRISM_FREE_KEY` | Owner-funded key for the free trial. Spend-capped (below). |
+| `PRISM_FREE_KEY` | Your OpenAI key, used to fund a capped free trial for visitors. |
 | `PRISM_DAILY_FREE_LIMIT` | Global hard cap on free runs per day (default `10`, ~$1/day). |
 | `PRISM_FREE_PER_SESSION` | Free runs per visitor before they need their own key (default `2`). |
 
-`OPENAI_API_KEY` is **ignored on the server** — it only takes effect locally when `PRISM_ALLOW_ENV_KEY=1` is also set. This is deliberate: it means a stray `OPENAI_API_KEY` can never become an uncapped shared key in production. Do not set `PRISM_ALLOW_ENV_KEY` on a server.
+`OPENAI_API_KEY` is **ignored on the server** — it only takes effect locally when `PRISM_ALLOW_ENV_KEY=1` is also set. This is deliberate: a stray `OPENAI_API_KEY` can never become an uncapped shared key in production.
 
-## How you give Prism your experience
+## Architecture
 
-You upload your resume (1–3 versions if you have them — different roles, different formats) and Prism reads it into a structured record of everything you've done. This is *not* the product — it's just how Prism learns your background so it has the full picture to draw from when tailoring. Under the hood this record is a `master_resume.json`; you never have to touch it.
+```
+resume_agent/
+├── schema.py       Pydantic models: MasterResume, Experience, Bullet, Project, ...
+├── pipeline.py     Four-stage LLM pipeline (parse → score → polish → summarise)
+├── prompts.py      All LLM prompts — tuned for GPT-4o / GPT-4o-mini
+├── cv_builder.py   Generates the tailored .docx (python-docx)
+├── parser.py       Converts an uploaded PDF/DOCX resume → master_resume.json (GPT-4o)
+└── selector.py     Tag-based fallback selector (no LLM)
 
-If you'd rather build that record by hand, download `templates/master_resume_template.json` from the sidebar and fill it in. See `examples/example_master_resume.json` for a realistic reference.
+app.py              Streamlit UI — multi-stage with human-in-the-loop review
+.streamlit/         Prismatic dark theme
+templates/          Annotated master_resume_template.json
+examples/           Realistic anonymized example resume
+```
 
-**The actual work happens next:** you paste the job you're applying for, and Prism selects the most relevant experience, drops what doesn't fit, rewrites bullets in the role's language, and surfaces the transferable skills that match — then hands you a tailored Word doc.
+**Stack:** Python · Streamlit · OpenAI (GPT-4o / GPT-4o-mini) · Pydantic · python-docx · pdfplumber
 
 ## Tagging
 
-Each bullet has a `tags` list. Tags are keywords that describe what type of work the bullet represents — not what it says, but what it demonstrates. The scoring algorithm uses these tags alongside LLM judgment to decide what to include for each track.
+Each bullet has a `tags` list — keywords describing what type of work the bullet *demonstrates* (not what it literally says). The scorer uses these alongside LLM judgment to decide what fits each role.
 
 ```json
 {
@@ -102,27 +126,6 @@ Each bullet has a `tags` list. Tags are keywords that describe what type of work
 
 Full tag vocabulary is in `templates/master_resume_template.json`.
 
-## Architecture
-
-```
-resume_agent/
-├── schema.py       Pydantic models: MasterResume, Experience, Bullet, Project, ...
-├── pipeline.py     Four-stage LLM pipeline (parse → score → polish → summarise)
-├── prompts.py      All LLM prompts — tuned for GPT-4o / GPT-4o-mini
-├── cv_builder.py   Generates .docx (python-docx) and .pdf (Chrome headless)
-├── parser.py       Converts uploaded PDF/DOCX resume → master_resume.json via GPT-4o
-└── selector.py     Tag-based fallback selector (no LLM, for testing)
-
-app.py              Streamlit UI — multi-stage with human-in-the-loop review
-templates/          Annotated master_resume_template.json
-examples/           Realistic anonymized example resume
-```
-
-## Output
-
-- `.docx` — Georgia font, navy section headers, gray dates, proper bullet indentation
-- `.pdf` — Chrome headless with `--no-pdf-header-footer`, letter size, 0.75in margins
-
 ## License
 
-MIT
+MIT © 2026 Shilpa Siddappa Yadahalli
