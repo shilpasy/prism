@@ -26,7 +26,7 @@ from resume_agent import (
     MasterResume, TRACK_CONFIG,
     build_docx,
     extract_text_from_file, convert_resumes_to_json,
-    parse_jd, score_and_select,
+    parse_jd, fetch_jd_from_url, score_and_select,
     apply_revision, apply_project_revision,
     polish_experiences, apply_polish_revision,
     finalize_experiences, generate_summary,
@@ -35,9 +35,10 @@ from resume_agent.freetier import (
     free_key, free_available, free_status, record_free_use, per_session_limit,
 )
 
-st.set_page_config(page_title="Resume Agent", page_icon="📄", layout="wide")
-st.title("Resume Agent")
-st.caption("Multi-track CV generator for multi-domain professionals")
+st.set_page_config(page_title="Prism", page_icon="📄", layout="wide")
+st.title("Prism")
+st.caption("Upload your resume and the job you're applying for. Prism tailors your "
+           "experience to fit the role, surfacing the transferable skills that match.")
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -99,119 +100,128 @@ with st.sidebar:
                    "A full CV costs roughly $0.05–0.15 in API usage.")
     st.divider()
 
-    mode = st.radio("Starting point", ["Convert existing resumes", "Upload master_resume.json"],
-                    on_change=reset_pipeline)
-
-    if mode == "Upload master_resume.json":
-        uploaded_json = st.file_uploader("Upload JSON", type=["json"])
+    # Advanced: reuse a previously built master_resume.json instead of re-uploading
+    # a resume. Optional — most users just upload their resume on the main screen.
+    with st.expander("Advanced: reuse a saved master_resume.json"):
+        uploaded_json = st.file_uploader("Upload master_resume.json", type=["json"])
         if uploaded_json:
             try:
                 raw = json.loads(uploaded_json.read())
-                resume = MasterResume.model_validate(raw)
-                if st.session_state.get("resume") is None:
-                    st.session_state["resume"] = resume
-                    set_stage("jd")
+                st.session_state["resume"] = MasterResume.model_validate(raw)
+                st.success("Loaded. Add a job description on the main screen.")
             except (json.JSONDecodeError, ValidationError) as e:
                 st.error(f"Invalid JSON: {e}")
-
-        with st.expander("Download blank template"):
-            with open("templates/master_resume_template.json") as f:
-                st.download_button("template", f.read(), "master_resume_template.json",
-                                   mime="application/json", use_container_width=True)
+        with open("templates/master_resume_template.json") as f:
+            st.download_button("Download blank template", f.read(),
+                               "master_resume_template.json",
+                               mime="application/json", use_container_width=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# STAGE: convert existing resumes
+# STAGE: landing — collect BOTH inputs (resume + job description), then run
 # ═══════════════════════════════════════════════════════════════════════════════
-if mode == "Convert existing resumes" and get_stage() == "load":
-    st.subheader("Upload your existing resumes (1–3 files)")
-    st.markdown("PDF, Word (.docx), or plain text. The agent merges all versions into "
-                "a single `master_resume.json` with every bullet tagged.")
+if get_stage() == "load":
+    saved_resume = st.session_state.get("resume")
 
-    files = st.file_uploader("Resume files", type=["pdf", "docx", "txt"],
-                             accept_multiple_files=True)
-    if files and len(files) > 3:
-        st.warning("Max 3 files.")
-        files = files[:3]
+    col_a, col_b = st.columns(2)
 
-    if st.button("Convert", type="primary", disabled=not (files and api_key)):
-        texts = []
-        for f in files:
-            try:
-                text = extract_text_from_file(f.name, f.read())
-                texts.append((f.name, text))
-                st.success(f"Read {f.name} ({len(text):,} chars)")
-            except Exception as e:
-                st.error(f"{f.name}: {e}")
+    # ---- Input 1: the resume ----
+    with col_a:
+        st.subheader("1. Your resume")
+        if saved_resume:
+            st.success(f"Using your saved resume — {len(saved_resume.experiences)} experiences.")
+            if st.button("Upload a different resume"):
+                st.session_state.pop("resume", None)
+                st.rerun()
+            files = None
+        else:
+            files = st.file_uploader("Upload your resume (PDF, Word, or text). "
+                                     "You can add up to 3 versions.",
+                                     type=["pdf", "docx", "txt"],
+                                     accept_multiple_files=True)
+            if files and len(files) > 3:
+                st.warning("Using the first 3 files.")
+                files = files[:3]
 
-        if texts:
-            with st.spinner("Building master_resume.json..."):
+    # ---- Input 2: the job description (REQUIRED) ----
+    with col_b:
+        st.subheader("2. The job you're applying for")
+        jd_url = st.text_input("Job posting URL",
+                               placeholder="https://company.com/careers/the-role")
+        jd_text = st.text_area("...or paste the job description here", height=220,
+                               placeholder="Paste the full job posting text...")
+
+    st.markdown("**What kind of role is this?**")
+    track = st.radio(
+        "Role type", list(TRACK_CONFIG.keys()),
+        format_func=lambda k: TRACK_CONFIG[k]["label"],
+        horizontal=True, label_visibility="collapsed",
+    )
+
+    has_resume = bool(saved_resume) or bool(files)
+    has_jd = bool(jd_url.strip()) or bool(jd_text.strip())
+
+    if not api_key:
+        st.info("Add an API key in the sidebar (or use the free trial) to continue.")
+    elif not has_resume:
+        st.info("Upload your resume above.")
+    elif not has_jd:
+        st.info("Add the job description — paste a URL or the text.")
+
+    if st.button("Generate tailored CV →", type="primary",
+                 disabled=not (has_resume and has_jd and api_key)):
+        # Count one free run against caps (this triggers the bulk of API spend).
+        if using_free:
+            record_free_use()
+            st.session_state["free_runs_used"] = sess_used + 1
+
+        st.session_state["track"] = track
+
+        # 1. Resume → structured MasterResume (skip if we already have one)
+        resume = saved_resume
+        if resume is None:
+            texts = []
+            with st.spinner("Reading your resume..."):
+                for f in files:
+                    try:
+                        texts.append((f.name, extract_text_from_file(f.name, f.read())))
+                    except Exception as e:
+                        st.error(f"Could not read {f.name}: {e}")
+            if not texts:
+                st.stop()
+            with st.spinner("Understanding your experience..."):
                 try:
                     raw_dict = convert_resumes_to_json(texts, api_key=api_key)
                     resume = MasterResume.model_validate(raw_dict)
                     st.session_state["resume"] = resume
                     st.session_state["resume_json"] = json.dumps(raw_dict, indent=2)
-                    set_stage("review_json")
-                    st.rerun()
                 except Exception as e:
-                    st.error(f"Conversion failed: {e}")
+                    st.error(f"Could not parse your resume: {e}")
+                    st.stop()
 
-if get_stage() == "review_json":
-    resume = st.session_state["resume"]
-    raw_json = st.session_state["resume_json"]
-    st.subheader(f"Resume built for {resume.contact.name}")
-    st.markdown(f"{len(resume.experiences)} experiences · {len(resume.projects)} projects · "
-                f"{len(resume.achievements)} achievements")
-
-    with st.expander("Preview JSON"):
-        st.code(raw_json, language="json")
-
-    c1, c2 = st.columns(2)
-    c1.download_button("Download master_resume.json", raw_json,
-                       "master_resume.json", mime="application/json", use_container_width=True)
-    if c2.button("Continue to CV generation →", type="primary", use_container_width=True):
-        set_stage("jd")
-        st.rerun()
-    st.stop()
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# STAGE: enter job description
-# ═══════════════════════════════════════════════════════════════════════════════
-if get_stage() == "jd":
-    resume = st.session_state.get("resume")
-    if not resume:
-        st.info("Load your resume in the sidebar first.")
-        st.stop()
-
-    st.success(f"Resume loaded: **{resume.contact.name}** · "
-               f"{len(resume.experiences)} experiences")
-
-    st.subheader("Job Description")
-    jd_text = st.text_area("Paste the full job posting", height=300,
-                           placeholder="Copy the entire job description here...")
-
-    if st.button("Analyse JD & score bullets", type="primary",
-                 disabled=not (jd_text.strip() and api_key)):
-        # Count one free run against both the global daily cap and this session's
-        # allowance (this triggers the bulk of API spend).
-        if using_free:
-            record_free_use()
-            st.session_state["free_runs_used"] = sess_used + 1
-        with st.spinner("Parsing JD..."):
-            try:
-                parsed_jd = parse_jd(jd_text, api_key=api_key)
-                st.session_state["parsed_jd"] = parsed_jd
-            except Exception as e:
-                st.error(f"JD parsing failed: {e}")
+        # 2. Job description → text (fetch URL if given)
+        with st.spinner("Reading the job posting..."):
+            jd = jd_text.strip()
+            if jd_url.strip():
+                try:
+                    jd = fetch_jd_from_url(jd_url.strip())
+                except Exception as e:
+                    st.error(f"Could not fetch that URL ({e}). Paste the text instead.")
+                    st.stop()
+            if not jd:
+                st.error("The job description came back empty. Paste the text instead.")
                 st.stop()
 
-        with st.spinner(f"Scoring bullets against {parsed_jd.get('role_title', 'role')}..."):
+        # 3. Parse JD + score/select against the resume
+        with st.spinner("Analysing the job and matching your experience..."):
             try:
-                sel = score_and_select(resume, parsed_jd, api_key=api_key)
+                parsed_jd = parse_jd(jd, api_key=api_key)
+                st.session_state["parsed_jd"] = parsed_jd
+                sel = score_and_select(resume, parsed_jd, track=track, api_key=api_key)
                 st.session_state["selection"] = sel
                 set_stage("review_selection")
                 st.rerun()
             except Exception as e:
-                st.error(f"Scoring failed: {e}")
+                st.error(f"Analysis failed: {e}")
     st.stop()
 
 # ═══════════════════════════════════════════════════════════════════════════════

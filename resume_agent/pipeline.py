@@ -76,6 +76,20 @@ def _jaccard(a: set, b: set) -> float:
 
 # ── Stage 1: Parse JD ─────────────────────────────────────────────────────────
 
+def fetch_jd_from_url(url: str) -> str:
+    """Fetch a job posting URL and return cleaned visible text."""
+    import requests
+    from bs4 import BeautifulSoup
+
+    resp = requests.get(url, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
+    resp.raise_for_status()
+    soup = BeautifulSoup(resp.text, "html.parser")
+    for tag in soup(["script", "style", "nav", "footer", "header"]):
+        tag.decompose()
+    text = soup.get_text(separator="\n", strip=True)
+    return re.sub(r"\n{3,}", "\n\n", text)
+
+
 def parse_jd(jd_text: str, api_key: str | None = None) -> dict:
     """Extract role, company, requirements, tags from raw JD text."""
     c = _client(api_key)
@@ -113,19 +127,28 @@ def _score_bullets(bullets: list[dict], jd_tags: set, requirements: list[str],
 def score_and_select(
     resume: MasterResume,
     parsed_jd: dict,
+    track: str | None = None,
     api_key: str | None = None,
 ) -> dict:
     """
     Score every experience, bullet, achievement, and project against the JD.
+    `track` (technical|leadership|domain) nudges scoring toward that role type.
     Returns: { included, dropped, achievements, projects, skills, all_scored_roles, all_projects_scored }
     all_scored_roles and all_projects_scored are kept so the UI can restore dropped items.
     """
+    from .schema import TRACK_CONFIG
+
     requirements = parsed_jd.get("key_requirements", []) + parsed_jd.get("preferred_skills", [])
     jd_tags: set[str] = set()
     for t in parsed_jd.get("tags", []):
         jd_tags |= _tokenize(t)
     for r in requirements:
         jd_tags |= _tokenize(r)
+
+    # Bias scoring toward the chosen role type by folding its priority tags in.
+    if track and track in TRACK_CONFIG:
+        for t in TRACK_CONFIG[track].get("priority_tags", []):
+            jd_tags |= _tokenize(t)
 
     included, dropped, all_scored = [], [], []
 
