@@ -94,7 +94,9 @@ div[data-testid="stVerticalBlockBorderWrapper"] {
 st.markdown(
     f'<div class="prism-hero">{_PRISM_SVG}<div class="prism-title">PRISM</div></div>'
     '<div class="prism-tag">Upload your resume and the job you\'re applying for. '
-    'Prism tailors your experience to fit the role, surfacing the transferable skills that match.</div>',
+    'Prism tailors your experience to fit the role, surfacing the transferable skills that match.</div>'
+    '<div style="height:3px;border-radius:3px;margin:4px 0 18px;max-width:520px;'
+    'background:linear-gradient(90deg,#8B5CF6,#22D3EE,#EC4899,transparent);"></div>',
     unsafe_allow_html=True,
 )
 
@@ -112,6 +114,22 @@ def get_stage():
 
 def set_stage(s):
     st.session_state["stage"] = s
+
+
+def step_header(num, title):
+    """Bold, self-contained step header (inline styles → always renders)."""
+    return (
+        '<div style="display:flex;align-items:center;gap:12px;margin:2px 0 2px;">'
+        '<span style="display:inline-flex;width:34px;height:34px;border-radius:50%;'
+        "align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;"
+        'font-weight:700;font-size:16px;color:#fff;'
+        'background:linear-gradient(135deg,#8B5CF6,#22D3EE);'
+        f'box-shadow:0 0 18px rgba(139,92,246,0.7);">{num}</span>'
+        "<span style=\"font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:22px;"
+        f'color:#F1F4FB;">{title}</span></div>'
+        '<div style="height:3px;border-radius:3px;margin:8px 0 14px;'
+        'background:linear-gradient(90deg,#8B5CF6,#22D3EE,#EC4899);opacity:.7;"></div>'
+    )
 
 
 # ── Sidebar: API key + resume load ───────────────────────────────────────────
@@ -185,8 +203,7 @@ if get_stage() == "load":
     # ---- Input 1: the resume ----
     with col_a:
         with st.container(border=True):
-            st.markdown('<div class="step"><span class="step-num">1</span>Your resume</div>',
-                        unsafe_allow_html=True)
+            st.markdown(step_header(1, "Your resume"), unsafe_allow_html=True)
             if saved_resume:
                 st.success(f"Using your saved resume — {len(saved_resume.experiences)} experiences.")
                 if st.button("Upload a different resume"):
@@ -208,8 +225,7 @@ if get_stage() == "load":
     # ---- Input 2: the job description (REQUIRED) ----
     with col_b:
         with st.container(border=True):
-            st.markdown('<div class="step"><span class="step-num">2</span>The job you\'re applying for</div>',
-                        unsafe_allow_html=True)
+            st.markdown(step_header(2, "The job you're applying for"), unsafe_allow_html=True)
             jd_url = st.text_input("Job posting URL",
                                    placeholder="https://company.com/careers/the-role")
             jd_text = st.text_area("...or paste the job description", height=150,
@@ -217,8 +233,7 @@ if get_stage() == "load":
 
     # ---- Role type + action ----
     with st.container(border=True):
-        st.markdown('<div class="step"><span class="step-num">3</span>What kind of role is this?</div>',
-                    unsafe_allow_html=True)
+        st.markdown(step_header(3, "What kind of role is this?"), unsafe_allow_html=True)
         track = st.radio(
             "Role type", list(TRACK_CONFIG.keys()),
             format_func=lambda k: TRACK_CONFIG[k]["label"],
