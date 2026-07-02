@@ -11,11 +11,20 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import streamlit as st
+
+# On Streamlit Community Cloud, config lives in the Secrets panel (st.secrets).
+# Mirror it into the environment so os.getenv(...) works the same way across
+# local (.env), Railway (dashboard vars), and Streamlit Cloud (secrets).
+try:
+    for _k, _v in st.secrets.items():
+        os.environ.setdefault(_k, str(_v))
+except Exception:
+    pass
 from pydantic import ValidationError
 
 from resume_agent import (
     MasterResume, TRACK_CONFIG,
-    build_docx, build_pdf_via_html,
+    build_docx,
     extract_text_from_file, convert_resumes_to_json,
     parse_jd, score_and_select,
     apply_revision, apply_project_revision,
@@ -367,7 +376,7 @@ if get_stage() == "generate":
     name_slug = resume.contact.name.replace(" ", "_")
     co_slug   = parsed_jd.get("company_name", "Company").replace(" ", "_")
 
-    dcol1, dcol2, dcol3 = st.columns(3)
+    dcol1, dcol2 = st.columns(2)
 
     with dcol1:
         with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
@@ -380,22 +389,9 @@ if get_stage() == "generate":
                            f"CV_{name_slug}_{co_slug}.docx",
                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                            use_container_width=True)
+        st.caption("Editable Word doc. Export to PDF from Word/Pages/Google Docs if you need one.")
 
     with dcol2:
-        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-            ppath = tmp.name
-        result = build_pdf_via_html(cv_data, ppath)
-        if result:
-            with open(ppath, "rb") as f:
-                pdf_bytes = f.read()
-            os.unlink(ppath)
-            st.download_button("Download .pdf", pdf_bytes,
-                               f"CV_{name_slug}_{co_slug}.pdf",
-                               mime="application/pdf", use_container_width=True)
-        else:
-            st.info("PDF needs Chrome installed.")
-
-    with dcol3:
         if st.button("Start over", use_container_width=True):
             reset_pipeline()
             st.rerun()
