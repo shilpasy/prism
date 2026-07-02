@@ -72,6 +72,19 @@ hr { border:none; height:2px; opacity:.55;
   box-shadow:0 0 18px rgba(124,58,237,0.45); transition:box-shadow .2s ease; }
 .stButton>button[kind="primary"]:hover { box-shadow:0 0 28px rgba(219,39,119,0.6); }
 [data-testid="stSidebar"] { background:#12151F; border-right:1px solid #232838; }
+/* input step cards */
+div[data-testid="stVerticalBlockBorderWrapper"] {
+  background:rgba(20,24,36,0.55); border:1px solid #262C3D !important;
+  border-radius:16px; }
+.step { font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:600;
+  display:flex; align-items:center; gap:11px; margin:2px 0 12px; color:#EEF1F8; }
+.step-num { display:inline-flex; width:27px; height:27px; border-radius:50%;
+  align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff;
+  background:linear-gradient(135deg,#7C3AED,#22D3EE);
+  box-shadow:0 0 12px rgba(124,58,237,0.5); }
+/* uploader dropzone */
+[data-testid="stFileUploaderDropzone"] { background:rgba(139,92,246,0.06);
+  border:1px dashed #3A4560; }
 </style>""", unsafe_allow_html=True)
 
 st.markdown(
@@ -163,53 +176,69 @@ with st.sidebar:
 if get_stage() == "load":
     saved_resume = st.session_state.get("resume")
 
-    col_a, col_b = st.columns(2)
+    col_a, col_b = st.columns(2, gap="large")
 
     # ---- Input 1: the resume ----
     with col_a:
-        st.subheader("1. Your resume")
-        if saved_resume:
-            st.success(f"Using your saved resume — {len(saved_resume.experiences)} experiences.")
-            if st.button("Upload a different resume"):
-                st.session_state.pop("resume", None)
-                st.rerun()
-            files = None
-        else:
-            files = st.file_uploader("Upload your resume (PDF, Word, or text). "
-                                     "You can add up to 3 versions.",
-                                     type=["pdf", "docx", "txt"],
-                                     accept_multiple_files=True)
-            if files and len(files) > 3:
-                st.warning("Using the first 3 files.")
-                files = files[:3]
+        with st.container(border=True):
+            st.markdown('<div class="step"><span class="step-num">1</span>Your résumé</div>',
+                        unsafe_allow_html=True)
+            if saved_resume:
+                st.success(f"Using your saved résumé — {len(saved_resume.experiences)} experiences.")
+                if st.button("Upload a different résumé"):
+                    st.session_state.pop("resume", None)
+                    st.rerun()
+                files = None
+            else:
+                files = st.file_uploader("Drop your résumé here — PDF, Word, or text.",
+                                         type=["pdf", "docx", "txt"],
+                                         accept_multiple_files=True)
+                if files and len(files) > 3:
+                    st.warning("Using the first 3 files.")
+                    files = files[:3]
+                if files:
+                    st.caption("Loaded: " + ", ".join(f.name for f in files))
+                else:
+                    st.caption("Tip: add 1–3 versions covering different roles for a richer match.")
 
     # ---- Input 2: the job description (REQUIRED) ----
     with col_b:
-        st.subheader("2. The job you're applying for")
-        jd_url = st.text_input("Job posting URL",
-                               placeholder="https://company.com/careers/the-role")
-        jd_text = st.text_area("...or paste the job description here", height=220,
-                               placeholder="Paste the full job posting text...")
+        with st.container(border=True):
+            st.markdown('<div class="step"><span class="step-num">2</span>The job you\'re applying for</div>',
+                        unsafe_allow_html=True)
+            jd_url = st.text_input("Job posting URL",
+                                   placeholder="https://company.com/careers/the-role")
+            jd_text = st.text_area("...or paste the job description", height=150,
+                                   placeholder="Paste the full job posting text...")
 
-    st.markdown("**What kind of role is this?**")
-    track = st.radio(
-        "Role type", list(TRACK_CONFIG.keys()),
-        format_func=lambda k: TRACK_CONFIG[k]["label"],
-        horizontal=True, label_visibility="collapsed",
-    )
+    # ---- Role type + action ----
+    with st.container(border=True):
+        st.markdown('<div class="step"><span class="step-num">3</span>What kind of role is this?</div>',
+                    unsafe_allow_html=True)
+        track = st.radio(
+            "Role type", list(TRACK_CONFIG.keys()),
+            format_func=lambda k: TRACK_CONFIG[k]["label"],
+            horizontal=True, label_visibility="collapsed",
+        )
 
-    has_resume = bool(saved_resume) or bool(files)
-    has_jd = bool(jd_url.strip()) or bool(jd_text.strip())
+        has_resume = bool(saved_resume) or bool(files)
+        has_jd = bool(jd_url.strip()) or bool(jd_text.strip())
 
-    if not api_key:
-        st.info("Add an API key in the sidebar (or use the free trial) to continue.")
-    elif not has_resume:
-        st.info("Upload your resume above.")
-    elif not has_jd:
-        st.info("Add the job description — paste a URL or the text.")
+        st.write("")
+        bcol, hcol = st.columns([1, 2])
+        with bcol:
+            go = st.button("Generate tailored CV →", type="primary",
+                           use_container_width=True,
+                           disabled=not (has_resume and has_jd and api_key))
+        with hcol:
+            if not api_key:
+                st.caption("→ Add an API key in the sidebar (or use the free trial).")
+            elif not has_resume:
+                st.caption("→ Upload your résumé to continue.")
+            elif not has_jd:
+                st.caption("→ Add the job — paste a URL or the text.")
 
-    if st.button("Generate tailored CV →", type="primary",
-                 disabled=not (has_resume and has_jd and api_key)):
+    if go:
         # Count one free run against caps (this triggers the bulk of API spend).
         if using_free:
             record_free_use()
