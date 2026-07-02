@@ -74,17 +74,21 @@ hr { border:none; height:2px; opacity:.55;
 [data-testid="stSidebar"] { background:#12151F; border-right:1px solid #232838; }
 /* input step cards */
 div[data-testid="stVerticalBlockBorderWrapper"] {
-  background:rgba(20,24,36,0.55); border:1px solid #262C3D !important;
-  border-radius:16px; }
-.step { font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:600;
-  display:flex; align-items:center; gap:11px; margin:2px 0 12px; color:#EEF1F8; }
-.step-num { display:inline-flex; width:27px; height:27px; border-radius:50%;
-  align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff;
-  background:linear-gradient(135deg,#7C3AED,#22D3EE);
-  box-shadow:0 0 12px rgba(124,58,237,0.5); }
+  background:linear-gradient(180deg, rgba(32,38,62,0.80), rgba(18,22,34,0.80)) !important;
+  border:1px solid #363F5E !important; border-radius:18px !important;
+  box-shadow:0 8px 30px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.04); }
+.step { font-family:'Space Grotesk',sans-serif; font-size:21px; font-weight:600;
+  display:flex; align-items:center; gap:12px; margin:4px 0 16px; color:#F1F4FB; }
+.step-num { display:inline-flex; width:32px; height:32px; border-radius:50%;
+  align-items:center; justify-content:center; font-size:16px; font-weight:700; color:#fff;
+  background:linear-gradient(135deg,#8B5CF6,#22D3EE);
+  box-shadow:0 0 16px rgba(139,92,246,0.6); }
 /* uploader dropzone */
-[data-testid="stFileUploaderDropzone"] { background:rgba(139,92,246,0.06);
-  border:1px dashed #3A4560; }
+[data-testid="stFileUploaderDropzone"] { background:rgba(139,92,246,0.08) !important;
+  border:1.5px dashed #4A5578 !important; border-radius:12px !important; }
+/* text inputs / textarea */
+[data-testid="stTextInput"] input, [data-testid="stTextArea"] textarea {
+  background:rgba(12,15,24,0.6) !important; border-radius:10px !important; }
 </style>""", unsafe_allow_html=True)
 
 st.markdown(
@@ -181,16 +185,16 @@ if get_stage() == "load":
     # ---- Input 1: the resume ----
     with col_a:
         with st.container(border=True):
-            st.markdown('<div class="step"><span class="step-num">1</span>Your résumé</div>',
+            st.markdown('<div class="step"><span class="step-num">1</span>Your resume</div>',
                         unsafe_allow_html=True)
             if saved_resume:
-                st.success(f"Using your saved résumé — {len(saved_resume.experiences)} experiences.")
-                if st.button("Upload a different résumé"):
+                st.success(f"Using your saved resume — {len(saved_resume.experiences)} experiences.")
+                if st.button("Upload a different resume"):
                     st.session_state.pop("resume", None)
                     st.rerun()
                 files = None
             else:
-                files = st.file_uploader("Drop your résumé here — PDF, Word, or text.",
+                files = st.file_uploader("Drop your resume here — PDF, Word, or text.",
                                          type=["pdf", "docx", "txt"],
                                          accept_multiple_files=True)
                 if files and len(files) > 3:
@@ -234,7 +238,7 @@ if get_stage() == "load":
             if not api_key:
                 st.caption("→ Add an API key in the sidebar (or use the free trial).")
             elif not has_resume:
-                st.caption("→ Upload your résumé to continue.")
+                st.caption("→ Upload your resume to continue.")
             elif not has_jd:
                 st.caption("→ Add the job — paste a URL or the text.")
 
