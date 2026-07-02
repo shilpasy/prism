@@ -1,5 +1,7 @@
 """
-Resume Agent — multi-track CV generator with full LLM pipeline.
+Prism — tailor your resume to a specific job posting.
+Give it your resume + the job; it selects, rewrites, and surfaces the
+transferable skills that fit, then produces a tailored Word doc.
 Run: streamlit run app.py
 """
 import copy
