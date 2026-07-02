@@ -38,7 +38,17 @@ LLM_WEIGHT          = 0.85
 
 
 def _client(api_key: str | None = None) -> OpenAI:
-    return OpenAI(api_key=api_key or os.getenv("OPENAI_API_KEY"))
+    # Never silently fall back to OPENAI_API_KEY on a server — that would let an
+    # accidentally-set env key be used with no spend cap. The env fallback is
+    # opt-in only via PRISM_ALLOW_ENV_KEY=1 (set locally, never on Railway).
+    # We must RAISE when no key is resolved: passing an empty key to OpenAI()
+    # makes the SDK read OPENAI_API_KEY from the environment on its own.
+    key = api_key
+    if not key and os.getenv("PRISM_ALLOW_ENV_KEY") == "1":
+        key = os.getenv("OPENAI_API_KEY")
+    if not key:
+        raise RuntimeError("No OpenAI API key available. Provide your own key to continue.")
+    return OpenAI(api_key=key)
 
 
 def _chat(client: OpenAI, model: str, system: str, user: str, max_tokens: int) -> str:

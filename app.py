@@ -48,8 +48,12 @@ def set_stage(s):
 
 # ── Sidebar: API key + resume load ───────────────────────────────────────────
 with st.sidebar:
+    # Pre-fill the field from OPENAI_API_KEY ONLY in local dev (explicit opt-in).
+    # On the server this stays empty, so a stray OPENAI_API_KEY can never become
+    # an uncapped shared key. The only server-funded key is PRISM_FREE_KEY (capped).
+    _default_key = os.getenv("OPENAI_API_KEY", "") if os.getenv("PRISM_ALLOW_ENV_KEY") == "1" else ""
     user_key = st.text_input("OpenAI API key", type="password",
-                             value=os.getenv("OPENAI_API_KEY", ""),
+                             value=_default_key,
                              placeholder="sk-proj-...",
                              help="Required for JD parsing, scoring, and bullet polishing.")
 

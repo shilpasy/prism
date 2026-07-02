@@ -60,12 +60,24 @@ git clone https://github.com/shilpasy/prism
 cd prism
 uv sync
 
-# Add your OpenAI key
-echo "OPENAI_API_KEY=sk-proj-..." > .env
+# Add your OpenAI key (copy the example and fill it in)
+cp .env.example .env   # then edit .env
 
 # Run
 uv run streamlit run app.py
 ```
+
+### Deploying (Railway etc.)
+
+Set these in the host's dashboard — **never commit them**:
+
+| Variable | Purpose |
+|---|---|
+| `PRISM_FREE_KEY` | Owner-funded key for the free trial. Spend-capped (below). |
+| `PRISM_DAILY_FREE_LIMIT` | Global hard cap on free runs per day (default `10`, ~$1/day). |
+| `PRISM_FREE_PER_SESSION` | Free runs per visitor before they need their own key (default `2`). |
+
+`OPENAI_API_KEY` is **ignored on the server** — it only takes effect locally when `PRISM_ALLOW_ENV_KEY=1` is also set. This is deliberate: it means a stray `OPENAI_API_KEY` can never become an uncapped shared key in production. Do not set `PRISM_ALLOW_ENV_KEY` on a server.
 
 ## Building your master_resume.json
 

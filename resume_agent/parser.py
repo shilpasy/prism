@@ -160,7 +160,14 @@ def convert_resumes_to_json(
     resume_texts: list of (filename, extracted_text) tuples.
     Returns parsed dict (not yet validated against Pydantic).
     """
-    client = OpenAI(api_key=api_key or os.getenv("OPENAI_API_KEY"))
+    # Env fallback is opt-in only (local dev), never automatic on a server.
+    # Raise when unresolved — an empty key makes the SDK read the env itself.
+    key = api_key
+    if not key and os.getenv("PRISM_ALLOW_ENV_KEY") == "1":
+        key = os.getenv("OPENAI_API_KEY")
+    if not key:
+        raise RuntimeError("No OpenAI API key available. Provide your own key to continue.")
+    client = OpenAI(api_key=key)
 
     response = client.chat.completions.create(
         model=model,
